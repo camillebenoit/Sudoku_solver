@@ -1,5 +1,5 @@
-from . import variable as vr
-from . import sudoku as sk
+import variable as vr
+import sudoku as sk
 
 number_sudoku = "1"
 level = "beginers"
@@ -8,7 +8,7 @@ sud = sk.Sudoku(path_to_file)
 print(sud)
 
 var1 = vr.Variable(2, 2, 5)
-print(var1.def_square_boundaries())
+print(var1.get_neighbours_position())
 
 
 def main():
