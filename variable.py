@@ -36,22 +36,23 @@ class Variable:
                 break
             j += 3
         return horizontal_boundaries, vertical_boundaries
-    
-    def get_neighbours_position(self) :
+
+    def get_neighbours_position(self) -> t.List:
         nb_line = self.position[0]
         nb_col = self.position[1]
         neighbours_position_list = []
         for k in range(9):
-            if k != nb_line : 
-                neighbours_position_list.append([k,nb_col])
-            if k != nb_col : 
+            if k != nb_line:
+                neighbours_position_list.append([k, nb_col])
+            if k != nb_col:
                 neighbours_position_list.append([nb_line, k])
         horizontal_boundaries, vertical_boundaries = self.def_square_boundaries()
-        for i in horizontal_boundaries :
-            for j in vertical_boundaries :
-                if [i,j] not in neighbours_position_list:
-                    neighbours_position_list.append([i,j])
+        for i in horizontal_boundaries:
+            for j in vertical_boundaries:
+                if [i, j] not in neighbours_position_list:
+                    neighbours_position_list.append([i, j])
         neighbours_position_list.remove([nb_line, nb_col])
         return neighbours_position_list
 
-
+    def get_domain(self) -> t.List:
+        return self.domain

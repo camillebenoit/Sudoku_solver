@@ -4,8 +4,9 @@ Spyder Editor
 
 This is a temporary script file.
 """
+import typing as t
 
-import variable as vr
+from Sudoku import variable as vr
 
 
 class Sudoku:
@@ -57,8 +58,18 @@ class Sudoku:
     def AC3(self):
         pass
 
-    def MRV(self):
-        pass
+    def MRV(self) -> t.List[int]:
+        smallest_domain = 9
+        variable_position = []
+
+        for i in range(9):
+            for j in range(9):
+                if self.values[i][j].value == 0:
+                    domain_length = len(self.values[i][j].get_domain())
+                    if domain_length < smallest_domain:
+                        smallest_domain = domain_length
+                        variable_position = self.values[i][j].position
+        return variable_position
 
     def degree_heuristic(self):
         pass
@@ -90,7 +101,7 @@ class Sudoku:
         nb_line = variable.position[0]
         nb_col = variable.position[1]
         # on cherche le carré dans lequel se situe la variable
-        horizontal_boundaries, vertical_boundaries = variable.DefSquareBoundaries()
+        horizontal_boundaries, vertical_boundaries = variable.def_square_boundaries()
         for i in horizontal_boundaries:
             for j in vertical_boundaries:
                 if self.values[i][j].value == variable.value and i != nb_line and j != nb_col:
@@ -103,9 +114,10 @@ class Sudoku:
                 variable):
             return True
         return False
-    
+
     def get_neighbours_variable(self, variable):
         neighbours_position = variable.get_neighbours_variable()
         neighbours = []
-        for position in neighbours_position :
+        for position in neighbours_position:
             neighbours.append(self.get_variable(position[0], position[1]))
+        return neighbours
