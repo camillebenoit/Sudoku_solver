@@ -5,7 +5,7 @@ Spyder Editor
 This is a temporary script file.
 """
 
-from . import variable as vr
+import variable as vr
 
 
 class Sudoku:
@@ -103,3 +103,9 @@ class Sudoku:
                 variable):
             return True
         return False
+    
+    def get_neighbours_variable(self, variable):
+        neighbours_position = variable.get_neighbours_variable()
+        neighbours = []
+        for position in neighbours_position :
+            neighbours.append(self.get_variable(position[0], position[1]))
