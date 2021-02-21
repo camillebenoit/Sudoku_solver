@@ -102,7 +102,7 @@ class Sudoku:
         nb_line = variable.position[0]
         nb_col = variable.position[1]
         # on cherche le carré dans lequel se situe la variable
-        horizontal_boundaries, vertical_boundaries = variable.DefSquareBoundaries()
+        horizontal_boundaries, vertical_boundaries = variable.def_square_boundaries()
         for i in horizontal_boundaries:
             for j in vertical_boundaries:
                 if self.values[i][j].value == variable.value and i != nb_line and j != nb_col:
