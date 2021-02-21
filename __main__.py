@@ -8,7 +8,7 @@ sud = sk.Sudoku(path_to_file)
 print(sud)
 
 var1 = vr.Variable(2, 2, 5)
-print(var1.DefSquareBoundaries())
+print(var1.def_square_boundaries())
 
 
 def main():
