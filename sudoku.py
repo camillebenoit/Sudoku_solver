@@ -63,8 +63,20 @@ class Sudoku:
     def degree_heuristic(self):
         pass
 
-    def least_constraining_value(self):
-        pass
+    def least_constraining_value(self, variable):
+        neighbours = self.get_neighbours_variable(variable)
+        variable_domain = variable.get_domain()
+        min_count = 9
+        best_value = variable_domain[0]
+        for value in variable_domain:
+            count = 0
+            for neighbour in neighbours :
+                if value in neighbour.get_domain():
+                    count += 1
+            if count < min_count :
+                min_count = count
+                best_value = value
+        return best_value
 
     def horizontal_constraint(self, variable: vr) -> bool:
         # return true si la contrainte est respectée, false sinon
@@ -83,7 +95,7 @@ class Sudoku:
             if self.values[i][nb_col].value == variable.value and i != nb_line:
                 return False
         return True
-        pass
+
 
     def square_constraint(self, variable: vr) -> bool:
         # return true si la contrainte est respectée, false sinon
@@ -109,3 +121,4 @@ class Sudoku:
         neighbours = []
         for position in neighbours_position :
             neighbours.append(self.get_variable(position[0], position[1]))
+        return neighbours
