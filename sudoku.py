@@ -78,7 +78,6 @@ class Sudoku:
                 var = self.get_variable(i, j)
                 variables.append(var)
                 neighbours.append(self.get_neighbours_variable(var))
-        
         #sinon queue = [(variables[i], neighbours[i]) for i in range(len(variables))]
         queue = [(xi, xj) for xi in variables for xj in neighbours]
 
