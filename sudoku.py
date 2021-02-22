@@ -4,8 +4,9 @@ Spyder Editor
 
 This is a temporary script file.
 """
+import typing as t
 
-import variable as vr
+from Sudoku import variable as vr
 
 
 class Sudoku:
@@ -55,32 +56,88 @@ class Sudoku:
     def get_variable(self, i, j):
         return self.values[i][j]
 
+    def get_neighbours_variable(self, variable: vr) -> t.List:
+        neighbours_position = variable.get_neighbours_position()
+        neighbours = []
+        for position in neighbours_position:
+            neighbours.append(self.get_variable(position[0], position[1]))
+        return neighbours
+
     def backtracking(self):
-        return self.recursive_bactraking(self.initial_assignement)
-    
-    def recursive_bactraking(self, assignement):
+        return self.recursive_backtracking(self.initial_assignement)
+
+    def recursive_backtracking(self, assignement):
         pass
 
     def AC3(self):
+        variables = []
+        neighbours = []
+
+        for i in range(9):
+            for j in range(9):
+                var = self.get_variable(i, j)
+                variables.append(var)
+                neighbours.append(self.get_neighbours_variable(var))
+
+        queue = [(xi, xj) for xi in variables for xj in neighbours]
+
+        while queue:
+            (xi, xj) = queue.pop(0)
+            if self.remove_inconsistent_values(xi, xj):
+                for xk in self.get_neighbours_variable(xi):
+                    queue.append((xk, xi))
+
+    def remove_inconsistent_values(self, xi: vr, xj: vr):
         pass
 
-    def MRV(self):
-        pass
+    def MRV(self) -> t.List[int]:
+        #choisir la variable avec le plus petit nombre de valeurs légales
+        #c'est-à-dire la variable avec le plus petit domaine
+        smallest_domain = 9
+        variable_position = []
+        for i in range(9):
+            for j in range(9):
+                var = self.get_variable(i, j)
+                if var.value == 0:
+                    domain_length = len(var.get_domain())
+                    if domain_length < smallest_domain:
+                        smallest_domain = domain_length
+                        variable_position = var.position
+        return variable_position
 
     def degree_heuristic(self):
-        pass
+        #choisir la variable avec le plus grand nombre de contraintes sur les variables restantes
+        #c'est à dire la variable qui a le plus grand nombre de voisins non assignés
+        max_nb_of_constraints = 0
+        variable_position = []
+        for i in range(9):
+            for j in range(9):
+                var = self.get_variable(i, j)
+                if var.value == 0:
+                    count_constraints = 0
+                    neighbours = self.get_neighbours_variable(var)
+                    for neighbour in neighbours : 
+                        if neighbour.assigned == False :
+                            count_constraints += 1
+                    if count_constraints > max_nb_of_constraints:
+                        max_nb_of_constraints = count_constraints
+                        variable_position = var.position
+        return variable_position
 
-    def least_constraining_value(self, variable):
+
+    def least_constraining_value(self, variable: vr) -> int:
+        #pour une variable donnée choisir la valeur la moins contraignante
+        #c'est-à-dire la valeur qui est la moins présente dans les domaines de ses voisins
         neighbours = self.get_neighbours_variable(variable)
         variable_domain = variable.get_domain()
         min_count = 9
         best_value = variable_domain[0]
         for value in variable_domain:
             count = 0
-            for neighbour in neighbours :
+            for neighbour in neighbours:
                 if value in neighbour.get_domain():
                     count += 1
-            if count < min_count :
+            if count < min_count:
                 min_count = count
                 best_value = value
         return best_value
@@ -103,7 +160,6 @@ class Sudoku:
                 return False
         return True
 
-
     def square_constraint(self, variable: vr) -> bool:
         # return true si la contrainte est respectée, false sinon
         nb_line = variable.position[0]
@@ -122,10 +178,3 @@ class Sudoku:
                 variable):
             return True
         return False
-    
-    def get_neighbours_variable(self, variable):
-        neighbours_position = variable.get_neighbours_variable()
-        neighbours = []
-        for position in neighbours_position :
-            neighbours.append(self.get_variable(position[0], position[1]))
-        return neighbours
