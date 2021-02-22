@@ -91,9 +91,10 @@ class Sudoku:
         pass
 
     def MRV(self) -> t.List[int]:
+        #choisir la variable avec le plus petit nombre de valeurs légales
+        #c'est-à-dire la variable avec le plus petit domaine
         smallest_domain = 9
         variable_position = []
-
         for i in range(9):
             for j in range(9):
                 var = self.get_variable(i, j)
@@ -105,9 +106,28 @@ class Sudoku:
         return variable_position
 
     def degree_heuristic(self):
-        pass
+        #choisir la variable avec le plus grand nombre de contraintes sur les variables restantes
+        #c'est à dire la variable qui a le plus grand nombre de voisins non assignés
+        max_nb_of_constraints = 0
+        variable_position = []
+        for i in range(9):
+            for j in range(9):
+                var = self.get_variable(i, j)
+                if var.value == 0:
+                    count_constraints = 0
+                    neighbours = self.get_neighbours_variable(var)
+                    for neighbour in neighbours : 
+                        if neighbour.assigned == False :
+                            count_constraints += 1
+                    if count_constraints > max_nb_of_constraints:
+                        max_nb_of_constraints = count_constraints
+                        variable_position = var.position
+        return variable_position
+
 
     def least_constraining_value(self, variable: vr) -> int:
+        #pour une variable donnée choisir la valeur la moins contraignante
+        #c'est-à-dire la valeur qui est la moins présente dans les domaines de ses voisins
         neighbours = self.get_neighbours_variable(variable)
         variable_domain = variable.get_domain()
         min_count = 9
