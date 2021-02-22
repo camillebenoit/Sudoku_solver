@@ -16,6 +16,7 @@ class Variable:
         self.assigned = False
         # si ce n'est pas 0 alors ça veut dire que la variable est déjà assignée
         if self.value != 0:
+            self.domain = []
             self.assigned = True
         self.position = [i, j]
 
