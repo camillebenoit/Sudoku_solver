@@ -88,10 +88,10 @@ class Sudoku:
         best_value = variable_domain[0]
         for value in variable_domain:
             count = 0
-            for neighbour in neighbours :
+            for neighbour in neighbours:
                 if value in neighbour.get_domain():
                     count += 1
-            if count < min_count :
+            if count < min_count:
                 min_count = count
                 best_value = value
         return best_value
@@ -113,7 +113,6 @@ class Sudoku:
             if self.values[i][nb_col].value == variable.value and i != nb_line:
                 return False
         return True
-
 
     def square_constraint(self, variable: vr) -> bool:
         # return true si la contrainte est respectée, false sinon
@@ -137,12 +136,6 @@ class Sudoku:
     def get_neighbours_variable(self, variable):
         neighbours_position = variable.get_neighbours_variable()
         neighbours = []
-<<<<<<< HEAD
         for position in neighbours_position:
             neighbours.append(self.get_variable(position[0], position[1]))
         return neighbours
-=======
-        for position in neighbours_position :
-            neighbours.append(self.get_variable(position[0], position[1]))
-        return neighbours
->>>>>>> camille
