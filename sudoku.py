@@ -56,13 +56,38 @@ class Sudoku:
     def get_variable(self, i, j):
         return self.values[i][j]
 
+    def get_neighbours_variable(self, variable: vr) -> t.List:
+        neighbours_position = variable.get_neighbours_position()
+        neighbours = []
+        for position in neighbours_position:
+            neighbours.append(self.get_variable(position[0], position[1]))
+        return neighbours
+
     def backtracking(self):
-        return self.recursive_bactraking(self.initial_assignement)
-    
-    def recursive_bactraking(self, assignement):
+        return self.recursive_backtracking(self.initial_assignement)
+
+    def recursive_backtracking(self, assignement):
         pass
 
     def AC3(self):
+        variables = []
+        neighbours = []
+
+        for i in range(9):
+            for j in range(9):
+                var = self.get_variable(i, j)
+                variables.append(var)
+                neighbours.append(self.get_neighbours_variable(var))
+
+        queue = [(xi, xj) for xi in variables for xj in neighbours]
+
+        while queue:
+            (xi, xj) = queue.pop(0)
+            if self.remove_inconsistent_values(xi, xj):
+                for xk in self.get_neighbours_variable(xi):
+                    queue.append((xk, xi))
+
+    def remove_inconsistent_values(self, xi: vr, xj: vr):
         pass
 
     def MRV(self) -> t.List[int]:
@@ -71,17 +96,18 @@ class Sudoku:
 
         for i in range(9):
             for j in range(9):
-                if self.values[i][j].value == 0:
-                    domain_length = len(self.values[i][j].get_domain())
+                var = self.get_variable(i, j)
+                if var.value == 0:
+                    domain_length = len(var.get_domain())
                     if domain_length < smallest_domain:
                         smallest_domain = domain_length
-                        variable_position = self.values[i][j].position
+                        variable_position = var.position
         return variable_position
 
     def degree_heuristic(self):
         pass
 
-    def least_constraining_value(self, variable):
+    def least_constraining_value(self, variable: vr) -> int:
         neighbours = self.get_neighbours_variable(variable)
         variable_domain = variable.get_domain()
         min_count = 9
@@ -132,10 +158,3 @@ class Sudoku:
                 variable):
             return True
         return False
-
-    def get_neighbours_variable(self, variable):
-        neighbours_position = variable.get_neighbours_variable()
-        neighbours = []
-        for position in neighbours_position:
-            neighbours.append(self.get_variable(position[0], position[1]))
-        return neighbours
