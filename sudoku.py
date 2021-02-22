@@ -13,6 +13,9 @@ class Sudoku:
 
     def __init__(self, path_to_file: str):
         self.values = []
+        #on va créer la liste des variables déjà assignées via un dictionnaire qui aura comme clé la position (tuple) 
+        #et item sa valeur
+        self.initial_assignement = dict()
         # extraction des variables depuis le document ss
         sudoku_file = open(path_to_file, "r")
         i = 0
@@ -30,6 +33,7 @@ class Sudoku:
                     j += 1
                 elif element in ["1", "2", "3", "4", "5", "6", "7", "8", "9"]:
                     value = vr.Variable(int(element), i, j)
+                    self.initial_assignement[(i,j)] = int(element)
                     the_line.append(value)
                     j += 1
             i += 1
@@ -53,6 +57,9 @@ class Sudoku:
         return self.values[i][j]
 
     def backtracking(self):
+        return self.recursive_bactraking(self.initial_assignement)
+    
+    def recursive_bactraking(self, assignement):
         pass
 
     def AC3(self):
