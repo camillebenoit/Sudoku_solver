@@ -13,6 +13,9 @@ class Sudoku:
 
     def __init__(self, path_to_file: str):
         self.values = []
+        #on va créer la liste des variables déjà assignées via un dictionnaire qui aura comme clé la position (tuple) 
+        #et item sa valeur
+        self.initial_assignement = dict()
         # extraction des variables depuis le document ss
         sudoku_file = open(path_to_file, "r")
         i = 0
@@ -30,6 +33,7 @@ class Sudoku:
                     j += 1
                 elif element in ["1", "2", "3", "4", "5", "6", "7", "8", "9"]:
                     value = vr.Variable(int(element), i, j)
+                    self.initial_assignement[(i,j)] = int(element)
                     the_line.append(value)
                     j += 1
             i += 1
@@ -53,6 +57,9 @@ class Sudoku:
         return self.values[i][j]
 
     def backtracking(self):
+        return self.recursive_bactraking(self.initial_assignement)
+    
+    def recursive_bactraking(self, assignement):
         pass
 
     def AC3(self):
@@ -74,8 +81,20 @@ class Sudoku:
     def degree_heuristic(self):
         pass
 
-    def least_constraining_value(self):
-        pass
+    def least_constraining_value(self, variable):
+        neighbours = self.get_neighbours_variable(variable)
+        variable_domain = variable.get_domain()
+        min_count = 9
+        best_value = variable_domain[0]
+        for value in variable_domain:
+            count = 0
+            for neighbour in neighbours :
+                if value in neighbour.get_domain():
+                    count += 1
+            if count < min_count :
+                min_count = count
+                best_value = value
+        return best_value
 
     def horizontal_constraint(self, variable: vr) -> bool:
         # return true si la contrainte est respectée, false sinon
@@ -94,7 +113,7 @@ class Sudoku:
             if self.values[i][nb_col].value == variable.value and i != nb_line:
                 return False
         return True
-        pass
+
 
     def square_constraint(self, variable: vr) -> bool:
         # return true si la contrainte est respectée, false sinon
@@ -118,6 +137,12 @@ class Sudoku:
     def get_neighbours_variable(self, variable):
         neighbours_position = variable.get_neighbours_variable()
         neighbours = []
+<<<<<<< HEAD
         for position in neighbours_position:
             neighbours.append(self.get_variable(position[0], position[1]))
         return neighbours
+=======
+        for position in neighbours_position :
+            neighbours.append(self.get_variable(position[0], position[1]))
+        return neighbours
+>>>>>>> camille
