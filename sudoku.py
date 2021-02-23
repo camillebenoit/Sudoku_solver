@@ -208,7 +208,7 @@ class Sudoku:
         nb_line = position[0]
         nb_col = position[1]
         # on cherche le carré dans lequel se situe la variable
-        v = Variable(0,nb_line,nb_col)
+        v = vr.Variable(0,nb_line,nb_col)
         horizontal_boundaries, vertical_boundaries = v.def_square_boundaries()
         for i in horizontal_boundaries:
             for j in vertical_boundaries:
