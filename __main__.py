@@ -1,5 +1,5 @@
-from Sudoku import variable as vr
-from Sudoku import sudoku as sk
+import variable as vr
+import sudoku as sk
 
 var1 = vr.Variable(2, 2, 5)
 # print(var1.get_neighbours_position())
