@@ -6,7 +6,7 @@ This is a temporary script file.
 """
 import typing as t
 
-from Sudoku import variable as vr
+import variable as vr
 import random as rd
 
 
@@ -35,7 +35,7 @@ class Sudoku:
                     j += 1
                 elif element in ["1", "2", "3", "4", "5", "6", "7", "8", "9"]:
                     value = vr.Variable(int(element), i, j)
-                    self.assignement[value] = int(element)
+                    self.assignement[(i,j)] = int(element)
                     the_line.append(value)
                     j += 1
             i += 1
@@ -66,16 +66,23 @@ class Sudoku:
         return neighbours
 
     def backtracking_search(self):
-        return self.recursive_backtracking(self.initial_assignement)
+        assignement = self.recursive_backtracking()
+        for pos in assignement.keys() : 
+            i = pos[0]
+            j = pos[1]
+            self.values[i][j] = assignement[pos]
+            
 
     def recursive_backtracking(self):
         if len(self.assignement) == 81 :
             return self.assignement
         
         #j'imagine que c'est là que doit apparaître MRV et degree heuristic ?
-        variable = rd.choice([var for var in self.values if var.assigned == False])
+        position = self.select_unassigned_variable()
         
-        position = variable.position
+        variable = self.get_variable(position[0], position[1])
+        
+        
         domain = variable.domain
         
         #et sur le for least constraining value ?
@@ -83,10 +90,10 @@ class Sudoku:
             if self.all_constraint(position, value) :
                 #les contraintes sont respectées
                 #on met à jour
-                self.assignement[variable] = value
-                self.value[position[0]][position[1]].assigned = True
-                self.value[position[0]][position[1]].value = value
-                self.value[position[0]][position[1]].domain = []
+                self.assignement[(position[0],position[1])] = value
+                self.values[position[0]][position[1]].assigned = True
+                self.values[position[0]][position[1]].value = value
+                self.values[position[0]][position[1]].domain = []
                 #AC3
                 self.AC3()
                 #on applique la récursivité
@@ -94,10 +101,10 @@ class Sudoku:
                 if result != [] :
                     return result
                 #on remet tout comme avant
-                del self.assignement[variable]
-                self.value[position[0]][position[1]].assigned = False
-                self.value[position[0]][position[1]].value = 0
-                self.value[position[0]][position[1]].domain = domain
+                del self.assignement[(position[0],position[1])]
+                self.values[position[0]][position[1]].assigned = False
+                self.values[position[0]][position[1]].value = 0
+                self.values[position[0]][position[1]].domain = domain
         return []
 
 
@@ -126,12 +133,23 @@ class Sudoku:
         j = position_xi[1]
         removed = False
         for value in set(xi.domain) :
-            if len(set(xj.domain)-set([value]) == 0) :
+            if len(set(xj.domain)-set([value])) == 0 :
                 self.values[i][j].domain.remove(value)
                 removed = True
         return removed
 
-
+    def select_unassigned_variable(self):
+        unassigned_variables = []
+        for i in range(9):
+            for j in range(9):
+                var = self.get_variable(i, j)
+                if var.assigned == False :
+                    unassigned_variables.append(var)
+        variable = rd.choice(unassigned_variables)
+        return variable.position
+        
+        
+        
     def MRV(self) -> t.List[int]:
         #choisir la variable avec le plus petit nombre de valeurs légales
         #c'est-à-dire la variable avec le plus petit domaine
@@ -153,15 +171,16 @@ class Sudoku:
         #c'est à dire la variable qui a le plus grand nombre de voisins non assignés
         max_nb_of_constraints = 0
         variable_position = []
-        for var in self.unassigned_variables:
-            count_constraints = 0
-            neighbours = self.get_neighbours_variable(var)
-            for neighbour in neighbours : 
-                if neighbour.assigned == False :
-                    count_constraints += 1
-            if count_constraints > max_nb_of_constraints:
-                max_nb_of_constraints = count_constraints
-                variable_position = var.position
+        for var in self.values:
+            if (var.position[0], var.position[1]) not in self.assignement.keys():
+                count_constraints = 0
+                neighbours = self.get_neighbours_variable(var)
+                for neighbour in neighbours : 
+                    if neighbour.assigned == False :
+                        count_constraints += 1
+                if count_constraints > max_nb_of_constraints:
+                    max_nb_of_constraints = count_constraints
+                    variable_position = var.position
         return variable_position
 
 
