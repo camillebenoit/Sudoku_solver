@@ -55,9 +55,9 @@ class Variable:
         neighbours_position_list.remove([nb_line, nb_col])
         return neighbours_position_list
 
-    def __eq__ (self,other):
-        #on compare les positions des variables
-        return self.position == other.position 
+    def __eq__(self, other):
+        # on compare les positions des variables
+        return self.position == other.position
 
-    def get_domain(self) :
+    def get_domain(self):
         return self.domain
