@@ -76,7 +76,6 @@ class Sudoku:
             self.values[i][j].value = self.assignment.get(pos)
 
     def recursive_backtracking(self):
-        print(f"assignment : {self.assignment}")
         print(len(self.assignment))
         if len(self.assignment) == 81:
             print("Sudoku solved !")
@@ -84,7 +83,7 @@ class Sudoku:
 
         # j'imagine que c'est là que doit apparaître MRV et degree heuristic ?
         # position = self.select_unassigned_variable()
-        position = self.degree_heuristic()
+        position = self.MRV()
         print(f"positions : {position}")
 
         variable = self.get_variable(position[0], position[1])
@@ -93,30 +92,36 @@ class Sudoku:
 
         domain = variable.domain
         print(f"domain : {variable.domain}")
-
         # et sur le for least constraining value ?
         for value in domain:
-            print("Dans le for")
             if self.all_constraint(position, value):
-                print("dans le if")
                 # les contraintes sont respectées
                 # on met à jour
-                self.assignment[(position[0], position[1])] = value
-                self.values[position[0]][position[1]].assigned = True
-                self.values[position[0]][position[1]].value = value
-                self.values[position[0]][position[1]].domain = []
+                self.assign(position, value)
+
                 # AC3
                 # self.AC3()
+
                 # on applique la récursivité
                 result = self.recursive_backtracking()
                 if result != {}:
                     return result
+
                 # on remet tout comme avant
-                del self.assignment[(position[0], position[1])]
-                self.values[position[0]][position[1]].assigned = False
-                self.values[position[0]][position[1]].value = 0
-                self.values[position[0]][position[1]].domain = domain
+                self.unassign(position, domain)
         return {}
+
+    def assign(self, position, value):
+        self.assignment[(position[0], position[1])] = value
+        self.values[position[0]][position[1]].assigned = True
+        self.values[position[0]][position[1]].value = value
+        self.values[position[0]][position[1]].domain = []
+
+    def unassign(self, position, domain):
+        del self.assignment[(position[0], position[1])]
+        self.values[position[0]][position[1]].assigned = False
+        self.values[position[0]][position[1]].value = 0
+        self.values[position[0]][position[1]].domain = domain
 
     def AC3(self) -> None:
         queue = []
@@ -126,8 +131,8 @@ class Sudoku:
                 var = self.get_variable(i, j)
                 neighbours = self.get_neighbours_variable(var)
                 for neighbour in neighbours:
-                    if [var, neighbour] not in queue or [neighbour, var] not in queue:
-                        queue.append([var, neighbour])
+                    # if [var, neighbour] not in queue or [neighbour, var] not in queue:
+                    queue.append([var, neighbour])
 
         # queue = [(self.values[i], neighbours[i]) for i in range(81)]
         # queue = [(xi, xj) for xi in self.values for xj in neighbours]
@@ -136,17 +141,20 @@ class Sudoku:
             if self.remove_inconsistent_values(xi, xj):
                 neighbours = self.get_neighbours_variable(xi)
                 for xk in neighbours:
-                    queue.append([xk, xi])
+                    if xk != xi:
+                        queue.append([xk, xi])
 
     def remove_inconsistent_values(self, xi: vr, xj: vr) -> bool:
         position_xi = xi.position
         i = position_xi[0]
         j = position_xi[1]
         remove = False
+
         for value in set(xi.domain):
             if len(set(xj.domain) - {value}) == 0:
                 self.values[i][j].domain.remove(value)
                 remove = True
+
         return remove
 
     def select_unassigned_variable(self):
