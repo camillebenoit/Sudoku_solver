@@ -76,10 +76,6 @@ class Sudoku:
             self.values[i][j].value = self.assignment.get(pos)
 
     def recursive_backtracking(self):
-        # for i in range(9):
-        #     for j in range(9):
-        #         print(self.values[i][j].domain)
-
         print(f"assignment : {self.assignment}")
         print(len(self.assignment))
         if len(self.assignment) == 81:
@@ -87,7 +83,8 @@ class Sudoku:
             return self.assignment
 
         # j'imagine que c'est là que doit apparaître MRV et degree heuristic ?
-        position = self.select_unassigned_variable()
+        # position = self.select_unassigned_variable()
+        position = self.degree_heuristic()
         print(f"positions : {position}")
 
         variable = self.get_variable(position[0], position[1])
@@ -166,7 +163,7 @@ class Sudoku:
     def MRV(self) -> t.List[int]:
         # choisir la variable avec le plus petit nombre de valeurs légales
         # c'est-à-dire la variable avec le plus petit domaine
-        smallest_domain = 9
+        smallest_domain = 10
         variable_position = []
         for i in range(9):
             for j in range(9):
@@ -181,18 +178,20 @@ class Sudoku:
     def degree_heuristic(self):
         # choisir la variable avec le plus grand nombre de contraintes sur les variables restantes
         # c'est à dire la variable qui a le plus grand nombre de voisins non assignés
-        max_nb_of_constraints = 0
+        max_nb_of_constraints = -1
         variable_position = []
-        for var in self.values:
-            if (var.position[0], var.position[1]) not in self.assignment.keys():
-                count_constraints = 0
-                neighbours = self.get_neighbours_variable(var)
-                for neighbour in neighbours:
-                    if not neighbour.assigned:
-                        count_constraints += 1
-                if count_constraints > max_nb_of_constraints:
-                    max_nb_of_constraints = count_constraints
-                    variable_position = var.position
+        for i in range(9):
+            for j in range(9):
+                var = self.get_variable(i, j)
+                if (i, j) not in self.assignment.keys():
+                    count_constraints = 0
+                    neighbours = self.get_neighbours_variable(var)
+                    for neighbour in neighbours:
+                        if not neighbour.assigned:
+                            count_constraints += 1
+                    if count_constraints > max_nb_of_constraints:
+                        max_nb_of_constraints = count_constraints
+                        variable_position = var.position
         return variable_position
 
     def least_constraining_value(self, variable: vr) -> int:
@@ -205,7 +204,7 @@ class Sudoku:
         for value in variable_domain:
             count = 0
             for neighbour in neighbours:
-                if neighbour.assigned == False and value in neighbour.get_domain():
+                if not neighbour.assigned and value in neighbour.get_domain():
                     count += 1
             if count < min_count:
                 min_count = count
