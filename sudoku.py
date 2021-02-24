@@ -5,8 +5,7 @@ Spyder Editor
 This is a temporary script file.
 """
 import typing as t
-
-from Sudoku import variable as vr
+import variable as vr
 import random as rd
 
 
@@ -70,13 +69,13 @@ class Sudoku:
         self.recursive_backtracking()
         # print(f"Assignment : {assignment}")
 
-        for pos in self.assignment.keys():
-            i = pos[0]
-            j = pos[1]
-            self.values[i][j].value = self.assignment.get(pos)
+        # for pos in self.assignment.keys():
+        #     i = pos[0]
+        #     j = pos[1]
+        #     self.values[i][j].value = self.assignment.get(pos)
 
     def recursive_backtracking(self):
-        print(len(self.assignment))
+        print("len assignement = " + str(len(self.assignment)))
         if len(self.assignment) == 81:
             print("Sudoku solved !")
             return self.assignment
@@ -84,23 +83,27 @@ class Sudoku:
         # j'imagine que c'est là que doit apparaître MRV et degree heuristic ?
         # position = self.select_unassigned_variable()
         position = self.MRV()
-        # print(f"positions : {position}")
+        print(f"positions : {position}")
 
         variable = self.get_variable(position[0], position[1])
 
         # print(variable.assigned)
 
         domain = variable.domain
-        # print(f"domain : {variable.domain}")
+        print(f"domain : {variable.domain}")
         # et sur le for least constraining value ?
+        
         for value in domain:
             if self.all_constraint(position, value):
                 # les contraintes sont respectées
+                
+                #on fait une copie de l'état actuel 
+                #temp_values = self.values
                 # on met à jour
                 self.assign(position, value)
-
+                
                 # AC3
-                # self.AC3()
+                #self.AC3()
 
                 # on applique la récursivité
                 result = self.recursive_backtracking()
@@ -108,7 +111,9 @@ class Sudoku:
                     return result
 
                 # on remet tout comme avant
+                #del self.assignment[(position[0], position[1])]
                 self.unassign(position, domain)
+                #self.values = temp_values
         return {}
 
     def assign(self, position, value):
@@ -125,38 +130,44 @@ class Sudoku:
 
     def AC3(self) -> None:
         queue = []
-
+        
+        #on remplir queue
         for i in range(9):
             for j in range(9):
                 var = self.get_variable(i, j)
-                neighbours = self.get_neighbours_variable(var)
-                for neighbour in neighbours:
-                    # if [var, neighbour] not in queue or [neighbour, var] not in queue:
-                    queue.append([var, neighbour])
-
+                if var.value == 0 :
+                    neighbours = self.get_neighbours_variable(var)
+                    for neighbour in neighbours:
+                        if [var, neighbour] not in queue or [neighbour, var] not in queue:
+                            queue.append([var, neighbour])
         # queue = [(self.values[i], neighbours[i]) for i in range(81)]
         # queue = [(xi, xj) for xi in self.values for xj in neighbours]
-        while queue:
-            [xi, xj] = queue.pop(0)
+        print(len(queue)) 
+        while len(queue) != 0:
+            [xi, xj] = queue.pop()
             if self.remove_inconsistent_values(xi, xj):
                 neighbours = self.get_neighbours_variable(xi)
                 for xk in neighbours:
-                    if xk != xi:
+                    if [xk, xi] not in queue or [xi, xk] not in queue:
                         queue.append([xk, xi])
 
+   
     def remove_inconsistent_values(self, xi: vr, xj: vr) -> bool:
         position_xi = xi.position
         i = position_xi[0]
         j = position_xi[1]
         remove = False
 
-        for value in set(xi.domain):
-            if len(set(xj.domain) - {value}) == 0:
+        for value in xi.domain:
+            if not any([self.is_different(value, poss) for poss in xj.domain]) :
                 self.values[i][j].domain.remove(value)
                 remove = True
 
         return remove
-
+    
+    def is_different(self, var1, var2) : 
+        return (var1 != var2)
+    
     def select_unassigned_variable(self):
         unassigned_variables = []
         for i in range(9):
