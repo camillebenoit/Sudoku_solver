@@ -1,4 +1,5 @@
 import time
+import click
 
 from Sudoku import variable as vr
 from Sudoku import sudoku as sk
@@ -6,9 +7,11 @@ from Sudoku import sudoku as sk
 var1 = vr.Variable(2, 2, 5)
 
 
+@clickcommand
+
 def main():
     number_sudoku = "1"
-    level = "beginers"
+    level = "beginners"
     path_to_file = "Sudoku/sudoku_" + level + "/sudoku" + number_sudoku + ".ss"
     sud = sk.Sudoku(path_to_file)
 

@@ -84,14 +84,14 @@ class Sudoku:
         # j'imagine que c'est là que doit apparaître MRV et degree heuristic ?
         # position = self.select_unassigned_variable()
         position = self.MRV()
-        print(f"positions : {position}")
+        # print(f"positions : {position}")
 
         variable = self.get_variable(position[0], position[1])
 
-        print(variable.assigned)
+        # print(variable.assigned)
 
         domain = variable.domain
-        print(f"domain : {variable.domain}")
+        # print(f"domain : {variable.domain}")
         # et sur le for least constraining value ?
         for value in domain:
             if self.all_constraint(position, value):
