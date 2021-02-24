@@ -76,18 +76,14 @@ class Sudoku:
             self.values[i][j].value = self.assignment.get(pos)
 
     def recursive_backtracking(self):
-        # for i in range(9):
-        #     for j in range(9):
-        #         print(self.values[i][j].domain)
-
-        print(f"assignment : {self.assignment}")
         print(len(self.assignment))
         if len(self.assignment) == 81:
             print("Sudoku solved !")
             return self.assignment
 
         # j'imagine que c'est là que doit apparaître MRV et degree heuristic ?
-        position = self.select_unassigned_variable()
+        # position = self.select_unassigned_variable()
+        position = self.MRV()
         print(f"positions : {position}")
 
         variable = self.get_variable(position[0], position[1])
@@ -96,30 +92,36 @@ class Sudoku:
 
         domain = variable.domain
         print(f"domain : {variable.domain}")
-
         # et sur le for least constraining value ?
         for value in domain:
-            print("Dans le for")
             if self.all_constraint(position, value):
-                print("dans le if")
                 # les contraintes sont respectées
                 # on met à jour
-                self.assignment[(position[0], position[1])] = value
-                self.values[position[0]][position[1]].assigned = True
-                self.values[position[0]][position[1]].value = value
-                self.values[position[0]][position[1]].domain = []
+                self.assign(position, value)
+
                 # AC3
                 # self.AC3()
+
                 # on applique la récursivité
                 result = self.recursive_backtracking()
                 if result != {}:
                     return result
+
                 # on remet tout comme avant
-                del self.assignment[(position[0], position[1])]
-                self.values[position[0]][position[1]].assigned = False
-                self.values[position[0]][position[1]].value = 0
-                self.values[position[0]][position[1]].domain = domain
+                self.unassign(position, domain)
         return {}
+
+    def assign(self, position, value):
+        self.assignment[(position[0], position[1])] = value
+        self.values[position[0]][position[1]].assigned = True
+        self.values[position[0]][position[1]].value = value
+        self.values[position[0]][position[1]].domain = []
+
+    def unassign(self, position, domain):
+        del self.assignment[(position[0], position[1])]
+        self.values[position[0]][position[1]].assigned = False
+        self.values[position[0]][position[1]].value = 0
+        self.values[position[0]][position[1]].domain = domain
 
     def AC3(self) -> None:
         queue = []
@@ -129,8 +131,8 @@ class Sudoku:
                 var = self.get_variable(i, j)
                 neighbours = self.get_neighbours_variable(var)
                 for neighbour in neighbours:
-                    if [var, neighbour] not in queue or [neighbour, var] not in queue:
-                        queue.append([var, neighbour])
+                    # if [var, neighbour] not in queue or [neighbour, var] not in queue:
+                    queue.append([var, neighbour])
 
         # queue = [(self.values[i], neighbours[i]) for i in range(81)]
         # queue = [(xi, xj) for xi in self.values for xj in neighbours]
@@ -139,17 +141,20 @@ class Sudoku:
             if self.remove_inconsistent_values(xi, xj):
                 neighbours = self.get_neighbours_variable(xi)
                 for xk in neighbours:
-                    queue.append([xk, xi])
+                    if xk != xi:
+                        queue.append([xk, xi])
 
     def remove_inconsistent_values(self, xi: vr, xj: vr) -> bool:
         position_xi = xi.position
         i = position_xi[0]
         j = position_xi[1]
         remove = False
+
         for value in set(xi.domain):
             if len(set(xj.domain) - {value}) == 0:
                 self.values[i][j].domain.remove(value)
                 remove = True
+
         return remove
 
     def select_unassigned_variable(self):
@@ -166,7 +171,7 @@ class Sudoku:
     def MRV(self) -> t.List[int]:
         # choisir la variable avec le plus petit nombre de valeurs légales
         # c'est-à-dire la variable avec le plus petit domaine
-        smallest_domain = 9
+        smallest_domain = 10
         variable_position = []
         for i in range(9):
             for j in range(9):
@@ -181,18 +186,20 @@ class Sudoku:
     def degree_heuristic(self):
         # choisir la variable avec le plus grand nombre de contraintes sur les variables restantes
         # c'est à dire la variable qui a le plus grand nombre de voisins non assignés
-        max_nb_of_constraints = 0
+        max_nb_of_constraints = -1
         variable_position = []
-        for var in self.values:
-            if (var.position[0], var.position[1]) not in self.assignment.keys():
-                count_constraints = 0
-                neighbours = self.get_neighbours_variable(var)
-                for neighbour in neighbours:
-                    if not neighbour.assigned:
-                        count_constraints += 1
-                if count_constraints > max_nb_of_constraints:
-                    max_nb_of_constraints = count_constraints
-                    variable_position = var.position
+        for i in range(9):
+            for j in range(9):
+                var = self.get_variable(i, j)
+                if (i, j) not in self.assignment.keys():
+                    count_constraints = 0
+                    neighbours = self.get_neighbours_variable(var)
+                    for neighbour in neighbours:
+                        if not neighbour.assigned:
+                            count_constraints += 1
+                    if count_constraints > max_nb_of_constraints:
+                        max_nb_of_constraints = count_constraints
+                        variable_position = var.position
         return variable_position
 
     def least_constraining_value(self, variable: vr) -> int:
@@ -205,7 +212,7 @@ class Sudoku:
         for value in variable_domain:
             count = 0
             for neighbour in neighbours:
-                if neighbour.assigned == False and value in neighbour.get_domain():
+                if not neighbour.assigned and value in neighbour.get_domain():
                     count += 1
             if count < min_count:
                 min_count = count
