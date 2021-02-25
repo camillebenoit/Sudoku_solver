@@ -5,7 +5,6 @@ Spyder Editor
 This is a temporary script file.
 """
 import typing as t
-
 import variable as vr
 
 class Sudoku:
