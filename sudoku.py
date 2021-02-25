@@ -60,7 +60,6 @@ class Sudoku:
             neighbours.append(self.get_variable(position[0], position[1]))
         return neighbours
 
-
     def horizontal_constraint(self, position, value) -> bool:
         # return true si la contrainte est respectée, false sinon
         nb_line = position[0]

@@ -5,13 +5,12 @@ import variable as vr
 import sudoku as sk
 import methods as m
 
-var1 = vr.Variable(2, 2, 5)
-
 
 #@clickcommand
 
 def main():
-   
+
+    number_sudoku = "1"
     level = "beginners"
     path_to_file = "sudoku_" + level + "/sudoku" + number_sudoku + ".ss"
     sudoku = sk.Sudoku(path_to_file)
