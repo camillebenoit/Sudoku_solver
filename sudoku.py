@@ -7,8 +7,6 @@ This is a temporary script file.
 import typing as t
 
 import variable as vr
-import random as rd
-
 
 class Sudoku:
 
@@ -17,7 +15,10 @@ class Sudoku:
         self.values = []
         # on va créer la liste des variables déjà assignées via un dictionnaire qui aura comme clé la variable assigné
         # et item sa valeur
+<<<<<<< Updated upstream
         self.assignement = dict()
+=======
+>>>>>>> Stashed changes
         # extraction des variables depuis le document ss
         sudoku_file = open(path_to_file, "r")
         i = 0
@@ -35,7 +36,10 @@ class Sudoku:
                     j += 1
                 elif element in ["1", "2", "3", "4", "5", "6", "7", "8", "9"]:
                     value = vr.Variable(int(element), i, j)
+<<<<<<< Updated upstream
                     self.assignement[(i, j)] = int(element)
+=======
+>>>>>>> Stashed changes
                     the_line.append(value)
                     j += 1
             i += 1
@@ -65,6 +69,7 @@ class Sudoku:
             neighbours.append(self.get_variable(position[0], position[1]))
         return neighbours
 
+<<<<<<< Updated upstream
     def backtracking_search(self):
         assignement = self.recursive_backtracking()
         for pos in assignement.keys():
@@ -194,6 +199,8 @@ class Sudoku:
                 best_value = value
         return best_value
 
+=======
+>>>>>>> Stashed changes
     def horizontal_constraint(self, position, value) -> bool:
         # return true si la contrainte est respectée, false sinon
         nb_line = position[0]
