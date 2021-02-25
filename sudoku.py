@@ -6,8 +6,6 @@ This is a temporary script file.
 """
 import typing as t
 import variable as vr
-import random as rd
-
 
 class Sudoku:
 
@@ -16,7 +14,6 @@ class Sudoku:
         self.values = []
         # on va créer la liste des variables déjà assignées via un dictionnaire qui aura comme clé la variable assigné
         # et item sa valeur
-        self.assignment = dict()
         # extraction des variables depuis le document ss
         sudoku_file = open(path_to_file, "r")
         i = 0
@@ -34,7 +31,6 @@ class Sudoku:
                     j += 1
                 elif element in ["1", "2", "3", "4", "5", "6", "7", "8", "9"]:
                     value = vr.Variable(int(element), i, j)
-                    self.assignment[(i, j)] = int(element)
                     the_line.append(value)
                     j += 1
             i += 1
@@ -64,171 +60,6 @@ class Sudoku:
             neighbours.append(self.get_variable(position[0], position[1]))
         return neighbours
 
-    def backtracking_search(self):
-        # assignment = self.recursive_backtracking()
-        self.recursive_backtracking()
-        # print(f"Assignment : {assignment}")
-
-        # for pos in self.assignment.keys():
-        #     i = pos[0]
-        #     j = pos[1]
-        #     self.values[i][j].value = self.assignment.get(pos)
-
-    def recursive_backtracking(self):
-        print("len assignement = " + str(len(self.assignment)))
-        if len(self.assignment) == 81:
-            print("Sudoku solved !")
-            return self.assignment
-
-        # j'imagine que c'est là que doit apparaître MRV et degree heuristic ?
-        # position = self.select_unassigned_variable()
-        position = self.MRV()
-        print(f"positions : {position}")
-
-        variable = self.get_variable(position[0], position[1])
-
-        # print(variable.assigned)
-
-        domain = variable.domain
-        print(f"domain : {variable.domain}")
-        # et sur le for least constraining value ?
-        
-        for value in domain:
-            if self.all_constraint(position, value):
-                # les contraintes sont respectées
-                
-                #on fait une copie de l'état actuel 
-                #temp_values = self.values
-                # on met à jour
-                self.assign(position, value)
-                
-                # AC3
-                #self.AC3()
-
-                # on applique la récursivité
-                result = self.recursive_backtracking()
-                if result != {}:
-                    return result
-
-                # on remet tout comme avant
-                #del self.assignment[(position[0], position[1])]
-                self.unassign(position, domain)
-                #self.values = temp_values
-        return {}
-
-    def assign(self, position, value):
-        self.assignment[(position[0], position[1])] = value
-        self.values[position[0]][position[1]].assigned = True
-        self.values[position[0]][position[1]].value = value
-        self.values[position[0]][position[1]].domain = []
-
-    def unassign(self, position, domain):
-        del self.assignment[(position[0], position[1])]
-        self.values[position[0]][position[1]].assigned = False
-        self.values[position[0]][position[1]].value = 0
-        self.values[position[0]][position[1]].domain = domain
-
-    def AC3(self) -> None:
-        queue = []
-        
-        #on remplir queue
-        for i in range(9):
-            for j in range(9):
-                var = self.get_variable(i, j)
-                if var.value == 0 :
-                    neighbours = self.get_neighbours_variable(var)
-                    for neighbour in neighbours:
-                        if [var, neighbour] not in queue or [neighbour, var] not in queue:
-                            queue.append([var, neighbour])
-        # queue = [(self.values[i], neighbours[i]) for i in range(81)]
-        # queue = [(xi, xj) for xi in self.values for xj in neighbours]
-        print(len(queue)) 
-        while len(queue) != 0:
-            [xi, xj] = queue.pop()
-            if self.remove_inconsistent_values(xi, xj):
-                neighbours = self.get_neighbours_variable(xi)
-                for xk in neighbours:
-                    if [xk, xi] not in queue or [xi, xk] not in queue:
-                        queue.append([xk, xi])
-
-   
-    def remove_inconsistent_values(self, xi: vr, xj: vr) -> bool:
-        position_xi = xi.position
-        i = position_xi[0]
-        j = position_xi[1]
-        remove = False
-
-        for value in xi.domain:
-            if not any([self.is_different(value, poss) for poss in xj.domain]) :
-                self.values[i][j].domain.remove(value)
-                remove = True
-
-        return remove
-    
-    def is_different(self, var1, var2) : 
-        return (var1 != var2)
-    
-    def select_unassigned_variable(self):
-        unassigned_variables = []
-        for i in range(9):
-            for j in range(9):
-                var = self.get_variable(i, j)
-                if not var.assigned:
-                    unassigned_variables.append(var)
-                    # variable.assigned = true ?
-        variable = rd.choice(unassigned_variables)
-        return variable.position
-
-    def MRV(self) -> t.List[int]:
-        # choisir la variable avec le plus petit nombre de valeurs légales
-        # c'est-à-dire la variable avec le plus petit domaine
-        smallest_domain = 10
-        variable_position = []
-        for i in range(9):
-            for j in range(9):
-                var = self.get_variable(i, j)
-                if var.value == 0:
-                    domain_length = len(var.get_domain())
-                    if domain_length < smallest_domain:
-                        smallest_domain = domain_length
-                        variable_position = var.position
-        return variable_position
-
-    def degree_heuristic(self):
-        # choisir la variable avec le plus grand nombre de contraintes sur les variables restantes
-        # c'est à dire la variable qui a le plus grand nombre de voisins non assignés
-        max_nb_of_constraints = -1
-        variable_position = []
-        for i in range(9):
-            for j in range(9):
-                var = self.get_variable(i, j)
-                if (i, j) not in self.assignment.keys():
-                    count_constraints = 0
-                    neighbours = self.get_neighbours_variable(var)
-                    for neighbour in neighbours:
-                        if not neighbour.assigned:
-                            count_constraints += 1
-                    if count_constraints > max_nb_of_constraints:
-                        max_nb_of_constraints = count_constraints
-                        variable_position = var.position
-        return variable_position
-
-    def least_constraining_value(self, variable: vr) -> int:
-        # pour une variable donnée choisir la valeur la moins contraignante
-        # c'est-à-dire la valeur qui est la moins présente dans les domaines de ses voisins
-        neighbours = self.get_neighbours_variable(variable)
-        variable_domain = variable.get_domain()
-        min_count = 9
-        best_value = variable_domain[0]
-        for value in variable_domain:
-            count = 0
-            for neighbour in neighbours:
-                if not neighbour.assigned and value in neighbour.get_domain():
-                    count += 1
-            if count < min_count:
-                min_count = count
-                best_value = value
-        return best_value
 
     def horizontal_constraint(self, position, value) -> bool:
         # return true si la contrainte est respectée, false sinon
@@ -263,7 +94,8 @@ class Sudoku:
 
     def all_constraint(self, position, value) -> bool:
         # return true si les trois contraintes sont respectées, false sinon
-        if self.horizontal_constraint(position, value) and self.vertical_constraint(position, value) and \
-                self.square_constraint(position, value):
+        if self.horizontal_constraint(position, value) and self.vertical_constraint(position,
+                                                                                    value) and self.square_constraint(
+                position, value):
             return True
         return False
