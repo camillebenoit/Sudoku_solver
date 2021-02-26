@@ -48,7 +48,7 @@ def recursive_backtracking(sudoku, assignment):
     print(f"domain : {variable.domain}")
     # et sur le for least constraining value ?
     
-    for value in domain:
+    for value in intToList(domain):
         if sudoku.all_constraint(position, value):
             # les contraintes sont respectées
             # on met à jour assignement
@@ -102,15 +102,19 @@ def AC3(sudoku) -> None:
    
 def remove_inconsistent_values(sudoku, xi, xj) -> bool:
     position_xi = xi.position
+    
+    xi_domain = intToList(xi.domain)
+    xj_domain = intToList(xj.domain)
+    
+    
     i = position_xi[0]
     j = position_xi[1]
     remove = False
-
-    for value in xi.domain:
-        if not any([is_different(value, poss) for poss in xj.domain]) :
-            sudoku.values[i][j].domain.remove(value)
-            remove = True
-
+    for value in xi_domain:
+        if(len(xj_domain)>0):
+            if not any([is_different(value, poss) for poss in xj_domain]) :
+                sudoku.values[i][j].domain.remove(value)
+                remove = True
     return remove
 
 def is_different(var1, var2) : 
@@ -125,7 +129,7 @@ def MRV(sudoku) -> t.List[int]:
         for j in range(9):
             var = sudoku.get_variable(i, j)
             if var.value == 0:
-                domain_length = len(var.get_domain())
+                domain_length = len(intToList(var.get_domain()))
                 if domain_length < smallest_domain:
                     smallest_domain = domain_length
                     variable_position = var.position
@@ -166,3 +170,13 @@ def least_constraining_value(sudoku, variable: vr) -> int:
             min_count = count
             best_value = value
     return best_value
+    
+def intToList(integer):
+    if(isinstance(integer,int)):
+        b = str(integer)
+        returnValue = []
+        for digit in b:
+            returnValue.append (int(digit))
+        return returnValue
+    else:
+        return integer.copy()

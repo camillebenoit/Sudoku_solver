@@ -1,5 +1,4 @@
 import time
-import click
 
 import variable as vr
 import sudoku as sk
@@ -12,6 +11,7 @@ def main():
 
     number_sudoku = "1"
     level = "beginners"
+    number_sudoku = "1"
     path_to_file = "sudoku_" + level + "/sudoku" + number_sudoku + ".ss"
     sudoku = sk.Sudoku(path_to_file)
     print("Sudoku initial\n")
