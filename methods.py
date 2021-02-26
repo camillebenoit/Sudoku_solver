@@ -48,7 +48,7 @@ def recursive_backtracking(sudoku, assignment):
     print(f"domain : {variable.domain}")
     # et sur le for least constraining value ?
     
-    for value in domain:
+    for value in intToList(domain):
         if sudoku.all_constraint(position, value):
             # les contraintes sont respectées
             # on met à jour assignement
@@ -129,7 +129,7 @@ def MRV(sudoku) -> t.List[int]:
         for j in range(9):
             var = sudoku.get_variable(i, j)
             if var.value == 0:
-                domain_length = len(var.get_domain())
+                domain_length = len(intToList(var.get_domain()))
                 if domain_length < smallest_domain:
                     smallest_domain = domain_length
                     variable_position = var.position
