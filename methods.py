@@ -103,12 +103,13 @@ def AC3(sudoku) -> None:
 def remove_inconsistent_values(sudoku, xi, xj) -> bool:
     position_xi = xi.position
     
-    xi_domain = xi.domain.copy()
-    xj_domain = xj.domain
+    xi_domain = intToList(xi.domain)
+    xj_domain = intToList(xj.domain)
+    
+    
     i = position_xi[0]
     j = position_xi[1]
     remove = False
-
     for value in xi_domain:
         if(len(xj_domain)>0):
             if not any([is_different(value, poss) for poss in xj_domain]) :
@@ -169,3 +170,13 @@ def least_constraining_value(sudoku, variable: vr) -> int:
             min_count = count
             best_value = value
     return best_value
+    
+def intToList(integer):
+    if(isinstance(integer,int)):
+        b = str(integer)
+        returnValue = []
+        for digit in b:
+            returnValue.append (int(digit))
+        return returnValue
+    else:
+        return integer.copy()
