@@ -30,25 +30,31 @@ def backtracking_search(sudoku, initial_assignment):
         return sudoku
 
 def recursive_backtracking(sudoku, assignment):
-    print("len assignement = " + str(len(assignment)))
+    #print("len assignement = " + str(len(assignment)))
     if len(assignment) == 81:
         print("Sudoku solved !")
         return assignment
 
     # j'imagine que c'est là que doit apparaître MRV et degree heuristic ?
     # position = self.select_unassigned_variable()
-    position = MRV(sudoku)
-    print(f"positions : {position}")
+    positions = MRV(sudoku)
+    #print(f"positions : {positions}")
+    if len(positions) > 1 :
+        #si plusieurs variables sont choisies via le MRV on les départage avec degree heuristic
+        position = degree_heuristic(sudoku, assignment, positions)
+    else : 
+        position = positions[0]
+    #print(f"position : {position}")
 
     variable = sudoku.get_variable(position[0], position[1])
 
     # print(variable.assigned)
 
-    domain = variable.domain
-    print(f"domain : {variable.domain}")
+    domain = least_constraining_value(sudoku, assignment, variable)
+    print(f"domain : {domain}")
     # et sur le for least constraining value ?
     
-    for value in intToList(domain):
+    for value in domain:
         if sudoku.all_constraint(position, value):
             # les contraintes sont respectées
             # on met à jour assignement
@@ -120,7 +126,7 @@ def remove_inconsistent_values(sudoku, xi, xj) -> bool:
 def is_different(var1, var2) : 
     return (var1 != var2)
 
-def MRV(sudoku) -> t.List[int]:
+def MRV(sudoku):
     # choisir la variable avec le plus petit nombre de valeurs légales
     # c'est-à-dire la variable avec le plus petit domaine
     smallest_domain = 10
@@ -130,46 +136,59 @@ def MRV(sudoku) -> t.List[int]:
             var = sudoku.get_variable(i, j)
             if var.value == 0:
                 domain_length = len(intToList(var.get_domain()))
-                if domain_length < smallest_domain:
-                    smallest_domain = domain_length
-                    variable_position = var.position
+                if domain_length <= smallest_domain:
+                    if domain_length == smallest_domain: 
+                        variable_position.append(var.position)
+                    else :
+                        smallest_domain = domain_length
+                        variable_position = []
+                        variable_position.append(var.position)
     return variable_position
 
-def degree_heuristic(sudoku, assignment):
+def degree_heuristic(sudoku, assignment, positions):
     # choisir la variable avec le plus grand nombre de contraintes sur les variables restantes
     # c'est à dire la variable qui a le plus grand nombre de voisins non assignés
     max_nb_of_constraints = -1
     variable_position = []
-    for i in range(9):
-        for j in range(9):
-            var = sudoku.get_variable(i, j)
-            if (i, j) not in assignment.keys():
-                count_constraints = 0
-                neighbours = sudoku.get_neighbours_variable(var)
-                for neighbour in neighbours:
-                    if not neighbour.assigned:
-                        count_constraints += 1
-                if count_constraints > max_nb_of_constraints:
-                    max_nb_of_constraints = count_constraints
-                    variable_position = var.position
+    for position in positions: 
+        i = position[0]
+        j = position[1]
+        var = sudoku.get_variable(i, j)
+        count_constraints = 0
+        neighbours = sudoku.get_neighbours_variable(var)
+        for neighbour in neighbours:
+            i_neighbour = neighbour.position[0]
+            j_neighbour = neighbour.position[1]
+            if (i_neighbour, j_neighbour) not in assignment.keys():
+                count_constraints += 1
+        if count_constraints > max_nb_of_constraints:
+            max_nb_of_constraints = count_constraints
+            variable_position = var.position
     return variable_position
 
-def least_constraining_value(sudoku, variable: vr) -> int:
+def least_constraining_value(sudoku, assignment, variable: vr) -> int:
     # pour une variable donnée choisir la valeur la moins contraignante
     # c'est-à-dire la valeur qui est la moins présente dans les domaines de ses voisins
+    # on va retourner une liste ordonnée des valeurs à tester
     neighbours = sudoku.get_neighbours_variable(variable)
-    variable_domain = variable.get_domain()
-    min_count = 9
-    best_value = variable_domain[0]
+    variable_domain = intToList(variable.get_domain())
+    ordered_values = []
+    constraints_count = {}
+    #on associe à chaque valeur possible le nombre de voisins qu'elle constraint
     for value in variable_domain:
         count = 0
         for neighbour in neighbours:
-            if not neighbour.assigned and value in neighbour.get_domain():
+            i_neighbour = neighbour.position[0]
+            j_neighbour = neighbour.position[1]
+            if (i_neighbour, j_neighbour) not in assignment.keys() and value in intToList(neighbour.get_domain()):
                 count += 1
-        if count < min_count:
-            min_count = count
-            best_value = value
-    return best_value
+        constraints_count[value] = count
+    #on trie le dictionnaire et le transforme en liste de tuple
+    sorted_dict = sorted(constraints_count.items(), key=lambda x: x[1])
+    #on crée la liste finale des valeurs à tester
+    for i in range (len(sorted_dict)) : 
+        ordered_values.append(sorted_dict[i][0])
+    return ordered_values
     
 def intToList(integer):
     if(isinstance(integer,int)):
