@@ -102,15 +102,18 @@ def AC3(sudoku) -> None:
    
 def remove_inconsistent_values(sudoku, xi, xj) -> bool:
     position_xi = xi.position
+    
+    xi_domain = xi.domain.copy()
+    xj_domain = xj.domain
     i = position_xi[0]
     j = position_xi[1]
     remove = False
 
-    for value in xi.domain:
-        if not any([is_different(value, poss) for poss in xj.domain]) :
-            sudoku.values[i][j].domain.remove(value)
-            remove = True
-
+    for value in xi_domain:
+        if(len(xj_domain)>0):
+            if not any([is_different(value, poss) for poss in xj_domain]) :
+                sudoku.values[i][j].domain.remove(value)
+                remove = True
     return remove
 
 def is_different(var1, var2) : 
