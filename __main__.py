@@ -1,22 +1,27 @@
 import time
 
-from Sudoku import variable as vr
-from Sudoku import sudoku as sk
+import variable as vr
+import sudoku as sk
+import methods as m
 
-var1 = vr.Variable(2, 2, 5)
 
+#@clickcommand
 
 def main():
-    number_sudoku = "1"
-    level = "beginers"
-    path_to_file = "Sudoku/sudoku_" + level + "/sudoku" + number_sudoku + ".ss"
-    sud = sk.Sudoku(path_to_file)
 
-    print(sud)
+    number_sudoku = "1"
+    level = "beginners"
+    number_sudoku = "1"
+    path_to_file = "sudoku_" + level + "/sudoku" + number_sudoku + ".ss"
+    sudoku = sk.Sudoku(path_to_file)
+    print("Sudoku initial\n")
+    print(sudoku)
     start_time = time.time()
-    sud.backtracking_search()
+    initial_assignment =  m.init_assigment(sudoku)
+    sudoku_final = m.backtracking_search(sudoku, initial_assignment)
     print(f"\nElapsed time : {time.time() - start_time}")
-    print(sud)
+    print(sudoku_final)
+
 
 
 if __name__ == "__main__":

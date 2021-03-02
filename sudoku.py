@@ -4,7 +4,7 @@ Spyder Editor
 This is a temporary script file.
 """
 import typing as t
-from Sudoku import variable as vr
+import variable as vr
 
 
 class Sudoku:
@@ -93,7 +93,8 @@ class Sudoku:
 
     def all_constraint(self, position, value) -> bool:
         # return true si les trois contraintes sont respectées, false sinon
-        if self.horizontal_constraint(position, value) and self.vertical_constraint(position, value) \
-                and self.square_constraint(position, value):
+        if self.horizontal_constraint(position, value) and self.vertical_constraint(position,
+                                                                                    value) and self.square_constraint(
+            position, value):
             return True
         return False
