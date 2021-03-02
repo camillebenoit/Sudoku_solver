@@ -9,25 +9,28 @@ import typing as t
 import sudoku as sk
 import variable as vr
 
-def init_assigment(sudoku) :
+
+def init_assigment(sudoku):
     assignment = {}
     for i in range(9):
         for j in range(9):
-            if sudoku.values[i][j].value != 0 :
-                assignment[(i,j)] = sudoku.values[i][j].value
+            if sudoku.values[i][j].value != 0:
+                assignment[(i, j)] = sudoku.values[i][j].value
     return assignment
 
-def backtracking_search(sudoku, initial_assignment):
-        # assignment = self.recursive_backtracking()
-        assignment_final = recursive_backtracking(sudoku, initial_assignment)
-        # print(f"Assignment : {assignment}")
 
-        for pos in assignment_final.keys():
-            i = pos[0]
-            j = pos[1]
-            sudoku.values[i][j].value = assignment_final.get(pos)
-            
-        return sudoku
+def backtracking_search(sudoku, initial_assignment):
+    # assignment = self.recursive_backtracking()
+    assignment_final = recursive_backtracking(sudoku, initial_assignment)
+    # print(f"Assignment : {assignment}")
+
+    for pos in assignment_final.keys():
+        i = pos[0]
+        j = pos[1]
+        sudoku.values[i][j].value = assignment_final.get(pos)
+
+    return sudoku
+
 
 def recursive_backtracking(sudoku, assignment):
     print("len assignement = " + str(len(assignment)))
@@ -47,14 +50,14 @@ def recursive_backtracking(sudoku, assignment):
     domain = variable.domain
     print(f"domain : {variable.domain}")
     # et sur le for least constraining value ?
-    
+
     for value in intToList(domain):
         if sudoku.all_constraint(position, value):
             # les contraintes sont respectées
             # on met à jour assignement
             assignment[(position[0], position[1])] = value
             assign(sudoku, position, value)
-            
+
             # AC3
             AC3(sudoku)
 
@@ -69,24 +72,27 @@ def recursive_backtracking(sudoku, assignment):
 
     return {}
 
+
 def assign(sudoku, position, value):
     sudoku.values[position[0]][position[1]].assigned = True
     sudoku.values[position[0]][position[1]].value = value
     sudoku.values[position[0]][position[1]].domain = []
+
 
 def unassign(sudoku, position, domain):
     sudoku.values[position[0]][position[1]].assigned = False
     sudoku.values[position[0]][position[1]].value = 0
     sudoku.values[position[0]][position[1]].domain = domain
 
+
 def AC3(sudoku) -> None:
     queue = []
-    
-    #on remplir queue
+
+    # on remplir queue
     for i in range(9):
         for j in range(9):
             var = sudoku.get_variable(i, j)
-            if var.value == 0 :
+            if var.value == 0:
                 neighbours = sudoku.get_neighbours_variable(var)
                 for neighbour in neighbours:
                     if [var, neighbour] not in queue or [neighbour, var] not in queue:
@@ -99,26 +105,27 @@ def AC3(sudoku) -> None:
                 if [xk, xi] not in queue or [xi, xk] not in queue:
                     queue.append([xk, xi])
 
-   
+
 def remove_inconsistent_values(sudoku, xi, xj) -> bool:
     position_xi = xi.position
-    
+
     xi_domain = intToList(xi.domain)
     xj_domain = intToList(xj.domain)
-    
-    
+
     i = position_xi[0]
     j = position_xi[1]
     remove = False
     for value in xi_domain:
-        if(len(xj_domain)>0):
-            if not any([is_different(value, poss) for poss in xj_domain]) :
+        if (len(xj_domain) > 0):
+            if not any([is_different(value, poss) for poss in xj_domain]):
                 sudoku.values[i][j].domain.remove(value)
                 remove = True
     return remove
 
-def is_different(var1, var2) : 
+
+def is_different(var1, var2):
     return (var1 != var2)
+
 
 def MRV(sudoku) -> t.List[int]:
     # choisir la variable avec le plus petit nombre de valeurs légales
@@ -134,6 +141,7 @@ def MRV(sudoku) -> t.List[int]:
                     smallest_domain = domain_length
                     variable_position = var.position
     return variable_position
+
 
 def degree_heuristic(sudoku, assignment):
     # choisir la variable avec le plus grand nombre de contraintes sur les variables restantes
@@ -154,6 +162,7 @@ def degree_heuristic(sudoku, assignment):
                     variable_position = var.position
     return variable_position
 
+
 def least_constraining_value(sudoku, variable: vr) -> int:
     # pour une variable donnée choisir la valeur la moins contraignante
     # c'est-à-dire la valeur qui est la moins présente dans les domaines de ses voisins
@@ -170,13 +179,14 @@ def least_constraining_value(sudoku, variable: vr) -> int:
             min_count = count
             best_value = value
     return best_value
-    
+
+
 def intToList(integer):
-    if(isinstance(integer,int)):
+    if (isinstance(integer, int)):
         b = str(integer)
         returnValue = []
         for digit in b:
-            returnValue.append (int(digit))
+            returnValue.append(int(digit))
         return returnValue
     else:
         return integer.copy()
