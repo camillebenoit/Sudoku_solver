@@ -3,7 +3,7 @@ Sudoku solver
 
 |python|
 
-This project is a
+This project is Python implementation of a sudoku solver using CSPs. It was made during our scholarship at UQAC.
 
 Requirements
 ============
@@ -33,6 +33,35 @@ When it is done, let's continue the installation :
 
     $ pipenv shell
 
+Run the code
+============
 
-.. |python| image:: https://img.shields.io/github/pipenv/locked/python-version/raphaellndr/Conways-Game-of-Life
+Before you can have some fun solving some great Sudokus (at least try to solve them by yourself before using our amazing
+algorithm), you should at least know how to run the code. So here are all the commands yet implemented :
+
+- Run default (easy sudoku, the first one, with AC3 algorithm) :
+
+.. code-block:: console
+
+    $ python -m Sudoku
+
+- Choose an other sudoku (between 1 and 6) :
+
+.. code-block:: console
+
+    $ python -m Sudoku -sn 3
+
+- Change the difficulty (easy, hard and extreme are available) :
+
+.. code-block:: console
+
+    $ python -m Sudoku -d hard
+
+- Run with or without AC3 algorithm :
+
+.. code-block:: console
+
+    $ python -m Sudoku -ac3 False
+
+.. |python| image:: https://img.shields.io/github/pipenv/locked/python-version/camillebenoit/Sudoku_solver
     :target: https://www.python.org/downloads/release/python-386/

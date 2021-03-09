@@ -21,8 +21,8 @@ def init_assigment(sudoku: sk) -> t.Dict:
     return assignment
 
 
-def backtracking_search(sudoku: sk, initial_assignment: t.Dict) -> sk:
-    assignment_final = recursive_backtracking(sudoku, initial_assignment)
+def backtracking_search(sudoku: sk, initial_assignment: t.Dict, use_ac3: bool) -> sk:
+    assignment_final = recursive_backtracking(sudoku, initial_assignment, use_ac3)
 
     for pos in assignment_final.keys():
         i = pos[0]
@@ -32,7 +32,7 @@ def backtracking_search(sudoku: sk, initial_assignment: t.Dict) -> sk:
     return sudoku
 
 
-def recursive_backtracking(sudoku: sk, assignment: t.Dict) -> t.Dict:
+def recursive_backtracking(sudoku: sk, assignment: t.Dict, use_ac3: bool) -> t.Dict:
     if len(assignment) == 81:
         print("Sudoku solved !\n")
         return assignment
@@ -58,10 +58,11 @@ def recursive_backtracking(sudoku: sk, assignment: t.Dict) -> t.Dict:
             assign(sudoku, position, value)
 
             # AC3
-            AC3(sudoku)
+            if use_ac3:
+                AC3(sudoku)
 
             # on applique la récursivité
-            result = recursive_backtracking(sudoku, assignment)
+            result = recursive_backtracking(sudoku, assignment, use_ac3)
             if result != {}:
                 return result
 
