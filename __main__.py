@@ -1,14 +1,13 @@
 import time
+import click
 
 import variable as vr
 import sudoku as sk
 import methods as m
 
 
-#@clickcommand
-
+@clickcommand
 def main():
-
     number_sudoku = "1"
     level = "hard"
     number_sudoku = "1"
@@ -17,11 +16,10 @@ def main():
     print("Sudoku initial\n")
     print(sudoku)
     start_time = time.time()
-    initial_assignment =  m.init_assigment(sudoku)
+    initial_assignment = m.init_assigment(sudoku)
     sudoku_final = m.backtracking_search(sudoku, initial_assignment)
     print(f"\nElapsed time : {time.time() - start_time}")
     print(sudoku_final)
-
 
 
 if __name__ == "__main__":

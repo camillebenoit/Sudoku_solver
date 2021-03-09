@@ -7,6 +7,7 @@ This is a temporary script file.
 import typing as t
 import variable as vr
 
+
 class Sudoku:
 
     def __init__(self, path_to_file: str):
@@ -95,6 +96,6 @@ class Sudoku:
         # return true si les trois contraintes sont respectées, false sinon
         if self.horizontal_constraint(position, value) and self.vertical_constraint(position,
                                                                                     value) and self.square_constraint(
-                position, value):
+            position, value):
             return True
         return False
