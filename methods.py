@@ -44,34 +44,38 @@ def recursive_backtracking(sudoku, assignment):
         position = degree_heuristic(sudoku, assignment, positions)
     else : 
         position = positions[0]
-    #print(f"position : {position}")
 
     variable = sudoku.get_variable(position[0], position[1])
 
-    # print(variable.assigned)
+    #print(variable.assigned)
 
     domain = least_constraining_value(sudoku, assignment, variable)
-    print(f"domain : {domain}")
+    #print(f"domain : {domain}")
     # et sur le for least constraining value ?
     
     for value in domain:
+        #print("value = " + str(value))
         if sudoku.all_constraint(position, value):
+            #print("je suis dans le if contraintes")
             # les contraintes sont respectées
             # on met à jour assignement
             assignment[(position[0], position[1])] = value
+            #print(f"domain1 : {domain}")
             assign(sudoku, position, value)
             
             # AC3
             AC3(sudoku)
 
             # on applique la récursivité
+            #print("suivant")
             result = recursive_backtracking(sudoku, assignment)
             if result != {}:
                 return result
 
             # on remet tout comme avant
             del assignment[(position[0], position[1])]
-            unassign(sudoku, position, value)
+            unassign(sudoku, position, domain)
+            #print(f"domain2 : {domain}")
 
     return {}
 
@@ -109,8 +113,8 @@ def AC3(sudoku) -> None:
 def remove_inconsistent_values(sudoku, xi, xj) -> bool:
     position_xi = xi.position
     
-    xi_domain = intToList(xi.domain)
-    xj_domain = intToList(xj.domain)
+    xi_domain = xi.domain
+    xj_domain = xj.domain
     
     
     i = position_xi[0]
@@ -135,7 +139,7 @@ def MRV(sudoku):
         for j in range(9):
             var = sudoku.get_variable(i, j)
             if var.value == 0:
-                domain_length = len(intToList(var.get_domain()))
+                domain_length = len(var.get_domain())
                 if domain_length <= smallest_domain:
                     if domain_length == smallest_domain: 
                         variable_position.append(var.position)
@@ -157,9 +161,7 @@ def degree_heuristic(sudoku, assignment, positions):
         count_constraints = 0
         neighbours = sudoku.get_neighbours_variable(var)
         for neighbour in neighbours:
-            i_neighbour = neighbour.position[0]
-            j_neighbour = neighbour.position[1]
-            if (i_neighbour, j_neighbour) not in assignment.keys():
+            if neighbour.value == 0 :
                 count_constraints += 1
         if count_constraints > max_nb_of_constraints:
             max_nb_of_constraints = count_constraints
@@ -171,16 +173,15 @@ def least_constraining_value(sudoku, assignment, variable: vr) -> int:
     # c'est-à-dire la valeur qui est la moins présente dans les domaines de ses voisins
     # on va retourner une liste ordonnée des valeurs à tester
     neighbours = sudoku.get_neighbours_variable(variable)
-    variable_domain = intToList(variable.get_domain())
+    variable_domain = variable.get_domain()
     ordered_values = []
     constraints_count = {}
     #on associe à chaque valeur possible le nombre de voisins qu'elle constraint
     for value in variable_domain:
         count = 0
         for neighbour in neighbours:
-            i_neighbour = neighbour.position[0]
-            j_neighbour = neighbour.position[1]
-            if (i_neighbour, j_neighbour) not in assignment.keys() and value in intToList(neighbour.get_domain()):
+            neighbour_domain = neighbour.get_domain()
+            if neighbour.value == 0 and value in neighbour_domain :
                 count += 1
         constraints_count[value] = count
     #on trie le dictionnaire et le transforme en liste de tuple
@@ -190,12 +191,3 @@ def least_constraining_value(sudoku, assignment, variable: vr) -> int:
         ordered_values.append(sorted_dict[i][0])
     return ordered_values
     
-def intToList(integer):
-    if(isinstance(integer,int)):
-        b = str(integer)
-        returnValue = []
-        for digit in b:
-            returnValue.append (int(digit))
-        return returnValue
-    else:
-        return integer.copy()
