@@ -55,12 +55,13 @@ class Sudoku:
     def get_variable(self, i, j) -> t.List:
         return self.values[i][j]
 
-    def get_neighbours_variable(self, variable: vr) -> t.List:
+    def get_neighbours(self, variable: vr) -> t.List:
         neighbours_position = variable.get_neighbours_position()
         neighbours = []
 
         for position in neighbours_position:
-            neighbours.append(self.get_variable(position[0], position[1]))
+            if self.get_variable(position[0], position[1]).value == 0:
+                neighbours.append(self.get_variable(position[0], position[1]))
 
         return neighbours
 

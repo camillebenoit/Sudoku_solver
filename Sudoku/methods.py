@@ -21,8 +21,8 @@ def init_assigment(sudoku: sk) -> t.Dict:
     return assignment
 
 
-def backtracking_search(sudoku: sk, initial_assignment: t.Dict, use_ac3: bool) -> sk:
-    assignment_final = recursive_backtracking(sudoku, initial_assignment, use_ac3)
+def backtracking_search(sudoku: sk, initial_assignment: t.Dict, use_ac3: bool, deg_h: bool) -> sk:
+    assignment_final = recursive_backtracking(sudoku, initial_assignment, use_ac3, deg_h)
 
     for pos in assignment_final.keys():
         i = pos[0]
@@ -32,26 +32,28 @@ def backtracking_search(sudoku: sk, initial_assignment: t.Dict, use_ac3: bool) -
     return sudoku
 
 
-def recursive_backtracking(sudoku: sk, assignment: t.Dict, use_ac3: bool) -> t.Dict:
+def recursive_backtracking(sudoku: sk, assignment: t.Dict, use_ac3: bool, deg_h: bool) -> t.Dict:
     if len(assignment) == 81:
         print("Sudoku solved !\n")
         return assignment
 
     positions = MRV(sudoku)
 
-    if len(positions) > 1:
-        # si plusieurs variables sont choisies via le MRV on les départage avec degree heuristic
-        position = degree_heuristic(sudoku, assignment, positions)
+    if deg_h:
+        if len(positions) > 1:
+            # si plusieurs variables sont choisies via le MRV on les départage avec degree heuristic
+            position = degree_heuristic(sudoku, positions)
+        else:
+            position = positions[0]
     else:
         position = positions[0]
 
     variable = sudoku.get_variable(position[0], position[1])
 
-    domain = least_constraining_value(sudoku, assignment, variable)
+    domain = least_constraining_value(sudoku, variable)
 
     for value in domain:
         if sudoku.all_constraint(position, value):
-            # print("je suis dans le if contraintes")
             # les contraintes sont respectées
             # on met à jour assignement
             assignment[(position[0], position[1])] = value
@@ -62,7 +64,7 @@ def recursive_backtracking(sudoku: sk, assignment: t.Dict, use_ac3: bool) -> t.D
                 AC3(sudoku)
 
             # on applique la récursivité
-            result = recursive_backtracking(sudoku, assignment, use_ac3)
+            result = recursive_backtracking(sudoku, assignment, use_ac3, deg_h)
             if result != {}:
                 return result
 
@@ -93,18 +95,18 @@ def AC3(sudoku: sk) -> None:
         for j in range(9):
             var = sudoku.get_variable(i, j)
             if var.value == 0:
-                neighbours = sudoku.get_neighbours_variable(var)
+                neighbours = sudoku.get_neighbours(var)
                 for neighbour in neighbours:
-                    if [var, neighbour] not in queue or [neighbour, var] not in queue:
-                        queue.append([var, neighbour])
+                    # if [var, neighbour] not in queue or [neighbour, var] not in queue:
+                    queue.append([var, neighbour])
 
-    while len(queue) != 0:
+    while len(queue):
         [xi, xj] = queue.pop()
         if remove_inconsistent_values(sudoku, xi, xj):
-            neighbours = sudoku.get_neighbours_variable(xi)
+            neighbours = sudoku.get_neighbours(xi)
             for xk in neighbours:
-                if [xk, xi] not in queue or [xi, xk] not in queue:
-                    queue.append([xk, xi])
+                # if [xk, xi] not in queue or [xi, xk] not in queue:
+                queue.append([xk, xi])
 
 
 def remove_inconsistent_values(sudoku, xi, xj) -> bool:
@@ -115,12 +117,14 @@ def remove_inconsistent_values(sudoku, xi, xj) -> bool:
 
     i = position_xi[0]
     j = position_xi[1]
+
     remove = False
     for value in xi_domain:
         if len(xj_domain) > 0:
             if not any([is_different(value, poss) for poss in xj_domain]):
                 sudoku.values[i][j].domain.remove(value)
                 remove = True
+
     return remove
 
 
@@ -149,7 +153,7 @@ def MRV(sudoku: sk):
     return variable_position
 
 
-def degree_heuristic(sudoku: sk, assignment, positions: t.List) -> t.List:
+def degree_heuristic(sudoku: sk, positions: t.List) -> t.List:
     # choisir la variable avec le plus grand nombre de contraintes sur les variables restantes
     # c'est à dire la variable qui a le plus grand nombre de voisins non assignés
     max_nb_of_constraints = -1
@@ -159,25 +163,22 @@ def degree_heuristic(sudoku: sk, assignment, positions: t.List) -> t.List:
         i = position[0]
         j = position[1]
         var = sudoku.get_variable(i, j)
-        count_constraints = 0
-        neighbours = sudoku.get_neighbours_variable(var)
+        neighbours = sudoku.get_neighbours(var)
 
-        for neighbour in neighbours:
-            if neighbour.value == 0:
-                count_constraints += 1
+        count_constraints = len(neighbours)
 
         if count_constraints > max_nb_of_constraints:
             max_nb_of_constraints = count_constraints
-            variable_position = var.position
+            variable_position = [i, j]
 
     return variable_position
 
 
-def least_constraining_value(sudoku: sk, assignment, variable: vr) -> t.List:
+def least_constraining_value(sudoku: sk, variable: vr) -> t.List:
     # pour une variable donnée choisir la valeur la moins contraignante
     # c'est-à-dire la valeur qui est la moins présente dans les domaines de ses voisins
     # on va retourner une liste ordonnée des valeurs à tester
-    neighbours = sudoku.get_neighbours_variable(variable)
+    neighbours = sudoku.get_neighbours(variable)
     variable_domain = variable.get_domain()
     ordered_values = []
     constraints_count = {}
@@ -187,7 +188,7 @@ def least_constraining_value(sudoku: sk, assignment, variable: vr) -> t.List:
         count = 0
         for neighbour in neighbours:
             neighbour_domain = neighbour.get_domain()
-            if neighbour.value == 0 and value in neighbour_domain:
+            if value in neighbour_domain:
                 count += 1
         constraints_count[value] = count
 
